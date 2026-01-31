@@ -122,10 +122,6 @@ def get_episode_from_webpage(url: str) -> dict | None:
         console.print(f"[yellow]Webpage scraping error: {e}[/yellow]")
         return None
 
-    except Exception as e:
-        console.print(f"[yellow]Webpage scraping error: {e}[/yellow]")
-        return None
-
 
 def download_direct_audio(audio_url: str, title: str, output_dir: Path) -> tuple[str, str]:
     """
