@@ -3,5 +3,6 @@
 
 from .download import DownloadStep
 from .transcribe import TranscribeStep
+from .format import FormatStep, SkipFormatStep
 
-__all__ = ["DownloadStep", "TranscribeStep"]
+__all__ = ["DownloadStep", "TranscribeStep", "FormatStep", "SkipFormatStep"]
