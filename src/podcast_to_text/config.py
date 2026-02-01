@@ -19,6 +19,12 @@ class Config(BaseModel):
     openai_key: str | None = None
     openai_deployment: str | None = None
 
+    # ASR Provider
+    asr_provider: str = "azure"  # "azure" or "qwen"
+
+    # Qwen ASR
+    qwen_asr_url: str | None = None
+
     # Paths
     output_dir: Path = Path("output")
     audio_dir: Path = Path("audio")
@@ -38,14 +44,22 @@ class Config(BaseModel):
             openai_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
             openai_key=os.getenv("AZURE_OPENAI_KEY"),
             openai_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+            asr_provider=os.getenv("ASR_PROVIDER", "azure"),
+            qwen_asr_url=os.getenv("QWEN_ASR_URL"),
         )
 
     def require_speech(self) -> None:
-        """Validate speech credentials are present."""
-        if not self.speech_key or not self.speech_region:
-            raise ValueError(
-                "AZURE_SPEECH_KEY and AZURE_SPEECH_REGION must be set"
-            )
+        """Validate ASR credentials are present."""
+        if self.asr_provider == "azure":
+            if not self.speech_key or not self.speech_region:
+                raise ValueError(
+                    "AZURE_SPEECH_KEY and AZURE_SPEECH_REGION must be set"
+                )
+        elif self.asr_provider == "qwen":
+            if not self.qwen_asr_url:
+                raise ValueError("QWEN_ASR_URL must be set")
+        else:
+            raise ValueError(f"Unknown ASR provider: {self.asr_provider}")
 
     def require_openai(self) -> None:
         """Validate OpenAI credentials are present."""
