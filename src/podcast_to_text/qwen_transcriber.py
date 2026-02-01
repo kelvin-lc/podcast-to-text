@@ -50,7 +50,7 @@ def transcribe_audio_qwen(
     audio_path: str,
     api_url: str,
     language: str = "zh",
-    stream: bool = True,
+    stream: bool = False,
 ) -> list[dict]:
     """
     Transcribe audio using Qwen3-ASR API.
