@@ -1,5 +1,6 @@
 """Qwen3-ASR transcription using OpenAI-compatible API."""
 
+import re
 from pathlib import Path
 
 import httpx
@@ -8,21 +9,35 @@ from rich.console import Console
 console = Console()
 
 
+def _clean_text(text: str) -> str:
+    """Clean Qwen ASR output text.
+
+    Qwen3-ASR returns text in format: "language Chinese<asr_text>actual text"
+    This function extracts the actual transcription.
+    """
+    # Extract text after <asr_text> tag if present
+    match = re.search(r"<asr_text>(.*)$", text, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return text.strip()
+
+
 def _parse_response(result: dict) -> list[dict]:
     """Convert Qwen ASR response to unified format."""
-    # verbose_json format includes segments
+    # verbose_json format includes segments (if supported)
     if "segments" in result:
         return [
             {
                 "start": seg.get("start", 0),
                 "end": seg.get("end", 0),
-                "text": seg.get("text", ""),
+                "text": _clean_text(seg.get("text", "")),
             }
             for seg in result["segments"]
         ]
 
     # Simple json format only has text
-    return [{"start": 0, "end": 0, "text": result.get("text", "")}]
+    text = _clean_text(result.get("text", ""))
+    return [{"start": 0, "end": 0, "text": text}]
 
 
 def transcribe_audio_qwen(
@@ -50,7 +65,7 @@ def transcribe_audio_qwen(
             files = {"file": (Path(audio_path).name, f)}
             data = {
                 "language": language,
-                "response_format": "verbose_json",
+                "response_format": "json",
             }
             response = httpx.post(url, files=files, data=data, timeout=600)
 
